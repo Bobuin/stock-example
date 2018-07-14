@@ -53,7 +53,13 @@ class StockController extends AppController
 
                 $companyName = $stockDataLogic->getCompanyName($requestData->getSymbol());
 
-                $stockData = $this->paginate($stockData);
+                \Cake\Mailer\Email::deliver(
+                    $this->request->getData('email'),
+                    $companyName,
+                    'From '. $requestData->getStartDate() . ' to '. $requestData->getEndDate(),
+                    ['from' => 'stock@example.com']
+                );
+
                 $this->set('stockData', $stockData);
 
                 $this->render('show_data');
