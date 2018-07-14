@@ -2,15 +2,15 @@
 
 namespace App\Controller;
 
+use App\Logic\RequestData;
 use App\Logic\StockDataLogic;
-use Cake\Datasource\ResultSetInterface;
+use App\Logic\SymbolsFileResource;
 use Cake\Validation\Validator;
 
 /**
  * Class StockController
  *
  * @package App\Controller
- * @method ResultSetInterface paginate($object = null, array $settings = [])
  */
 class StockController extends AppController
 {
@@ -18,16 +18,14 @@ class StockController extends AppController
     public function index()
     {
         if ($this->getRequest()->is('post')) {
+            $stockDataLogic = new StockDataLogic(new SymbolsFileResource());
+            $symbolsList = $stockDataLogic->getSymbolsList();
+
             $validator = new Validator();
 
             $validator->requirePresence('symbol')
                 ->notEmpty('symbol', 'Please fill this field')
-                ->add('symbol', [
-                    'length' => [
-                        'rule' => ['minLength', 3],
-                        'message' => 'Company Symbol need to be at least 3 characters long',
-                    ],
-                ]);
+                ->inList('symbol', $symbolsList, 'Company Symbol must be valid Stock code.');
 
             $validator->requirePresence('start_date')
                 ->notEmpty('start_date', 'Please fill this field')
@@ -35,7 +33,8 @@ class StockController extends AppController
 
             $validator->requirePresence('end_date')
                 ->notEmpty('end_date', 'Please fill this field')
-                ->date('end_date', ['mdy']);
+                ->date('end_date', ['mdy'])
+                ->greaterThanOrEqualToField('end_date', 'start_date');
 
             $validator->requirePresence('email')
                 ->notEmpty('email', 'Please fill this field')
@@ -44,21 +43,24 @@ class StockController extends AppController
             $errors = $validator->errors($this->request->getData());
 
             if (empty($errors)) {
-                $stockData = (new StockDataLogic())->getStockData($this->getRequest()->getData());
+                $requestData = new RequestData($this->request->getData());
+
+                $requestData->setSymbol($this->request->getData('symbol'));
+                $requestData->setStartDate($this->request->getData('start_date'));
+                $requestData->setEndDate($this->request->getData('end_date'));
+
+                $stockData = $stockDataLogic->getStockData($requestData);
+
+                $companyName = $stockDataLogic->getCompanyName($requestData->getSymbol());
 
                 $stockData = $this->paginate($stockData);
                 $this->set('stockData', $stockData);
 
                 $this->render('show_data');
+            } else {
+                $this->Flash->error('Fix errors');
+                $this->set('errors', $errors);
             }
-
-            $this->Flash->error('Fix errors');
-            $this->set('errors', $errors);
         }
-    }
-
-    public function showData()
-    {
-
     }
 }
