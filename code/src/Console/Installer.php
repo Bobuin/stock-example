@@ -152,7 +152,9 @@ class Installer
         };
 
         $walker = function ($dir) use (&$walker, $changePerms) {
-            $files = array_diff(scandir($dir), ['.', '..']);
+            /** @var array $scandir */
+            $scandir = scandir($dir);
+            $files = array_diff($scandir, ['.', '..']);
             foreach ($files as $file) {
                 $path = $dir . '/' . $file;
 
@@ -195,6 +197,7 @@ class Installer
     public static function setSecuritySaltInFile($dir, $io, $newKey, $file)
     {
         $config = $dir . '/config/' . $file;
+        /** @var string $content */
         $content = file_get_contents($config);
 
         $content = str_replace('__SALT__', $newKey, $content, $count);
@@ -226,6 +229,7 @@ class Installer
     public static function setAppNameInFile($dir, $io, $appName, $file)
     {
         $config = $dir . '/config/' . $file;
+        /** @var string $content */
         $content = file_get_contents($config);
         $content = str_replace('__APP_NAME__', $appName, $content, $count);
 

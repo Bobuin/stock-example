@@ -14,14 +14,15 @@ use Cake\Http\Exception\BadRequestException;
 class StockDataLogic
 {
 
-    private $historicalDataResource = 'https://www.quandl.com/api/v3/datasets/WIKI/##symbol##.csv?' .
-    'order=asc&start_date=##start_date##&end_date=##end_date##';
     private $resource;
+
+    private $historicalDataResource = 'https://www.quandl.com/api/v3/datasets/WIKI/##symbol##.csv?order=asc' .
+    '&start_date=##start_date##&end_date=##end_date##';
 
     /**
      * StockDataLogic constructor.
      *
-     * @param \App\Logic\SymbolsResource $resource
+     * @param \App\Logic\SymbolsResource $resource The resource to get symbols info
      */
     public function __construct(SymbolsResource $resource)
     {
@@ -37,7 +38,7 @@ class StockDataLogic
     }
 
     /**
-     * @param string $symbol
+     * @param string $symbol A company symbol to find full name
      *
      * @return string
      */
@@ -49,25 +50,13 @@ class StockDataLogic
     }
 
     /**
-     * @param RequestData $requestData
+     * @param string $rawData Retrieved data from stock source
      *
      * @return \Cake\Datasource\ResultSetInterface
      */
-    public function getStockData(RequestData $requestData): ResultSetInterface
+    public function formatStockData(string $rawData): ResultSetInterface
     {
-        $link = preg_replace(
-            ['/##symbol##/', '/##start_date##/', '/##end_date##/'],
-            [$requestData->getSymbol(), $requestData->getStartDate(), $requestData->getEndDate()],
-            $this->historicalDataResource
-        );
-
-        $plainData = file_get_contents($link);
-
-        if (false === $plainData) {
-            throw new BadRequestException('Cannot retrieve stock data');
-        }
-
-        $explodedData = explode(PHP_EOL, trim($plainData));
+        $explodedData = explode(PHP_EOL, trim($rawData));
 
         $data = [];
         foreach ($explodedData as $row) {
@@ -76,5 +65,27 @@ class StockDataLogic
         array_shift($data);
 
         return new ResultSetDecorator($data);
+    }
+
+    /**
+     * @param RequestData $requestData Data object with necessary request data
+     *
+     * @return string
+     */
+    public function getRawStockData(RequestData $requestData): string
+    {
+        $link = preg_replace(
+            ['/##symbol##/', '/##start_date##/', '/##end_date##/'],
+            [$requestData->getSymbol(), $requestData->getStartDate(), $requestData->getEndDate()],
+            $this->historicalDataResource
+        );
+
+        $rawData = file_get_contents($link);
+
+        if (false === $rawData) {
+            throw new BadRequestException('Cannot retrieve stock data. Site quandl.com unavailable.');
+        }
+
+        return $rawData;
     }
 }

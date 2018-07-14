@@ -2,6 +2,7 @@
 
 namespace App\Logic;
 
+use Cake\Http\Exception\BadRequestException;
 use Cake\I18n\FrozenDate;
 
 /**
@@ -12,22 +13,12 @@ use Cake\I18n\FrozenDate;
 class RequestData
 {
     private const DATE_FORMAT = 'Y-m-d';
-    private $originalData;
+    private const PARSE_DATE_FORMAT = 'Y-M-d';
     private $symbol;
     /** @var FrozenDate */
     private $startDate;
     /** @var FrozenDate */
     private $endDate;
-
-    /**
-     * RequestData constructor.
-     *
-     * @param array|null $data
-     */
-    public function __construct(?array $data = null)
-    {
-        $this->originalData = $data;
-    }
 
     /**
      * @return string
@@ -38,11 +29,19 @@ class RequestData
     }
 
     /**
-     * @param string $startDate
+     * @param string $startDate Start date of report interval
+     *
+     * @return void
      */
     public function setStartDate(string $startDate): void
     {
-        $this->startDate = FrozenDate::parseDate($startDate);
+        $parsedStartDate = FrozenDate::parseDate($startDate, self::PARSE_DATE_FORMAT);
+
+        if ($parsedStartDate === null) {
+            throw new BadRequestException('Cannot parse start date.');
+        }
+
+        $this->startDate = $parsedStartDate;
     }
 
     /**
@@ -54,11 +53,19 @@ class RequestData
     }
 
     /**
-     * @param string $endDate
+     * @param string $endDate End date of report interval
+     *
+     * @return void
      */
     public function setEndDate(string $endDate): void
     {
-        $this->endDate = FrozenDate::parseDate($endDate);
+        $parsedEndDate = FrozenDate::parseDate($endDate, self::PARSE_DATE_FORMAT);
+
+        if ($parsedEndDate === null) {
+            throw new BadRequestException('Cannot parse end date.');
+        }
+
+        $this->endDate = $parsedEndDate;
     }
 
     /**
@@ -70,7 +77,9 @@ class RequestData
     }
 
     /**
-     * @param string $symbol
+     * @param string $symbol The company's stock symbol
+     *
+     * @return void
      */
     public function setSymbol($symbol): void
     {

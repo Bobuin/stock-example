@@ -51,7 +51,7 @@ class SymbolsFileResource implements SymbolsResource
     }
 
     /**
-     * @param string $symbol
+     * @param string $symbol A company symbol to find whole record
      *
      * @return array
      */

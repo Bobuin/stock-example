@@ -84,10 +84,17 @@ use Cake\View\View;
 <script type="text/javascript">
     $(function () {
         $("#start-date").datepicker({
+            dateFormat: 'yy-mm-dd',
             changeMonth: true,
             changeYear: true
+        }).bind("change",function(){
+            var minValue = $(this).val();
+            minValue = $.datepicker.parseDate("yy-mm-dd", minValue);
+            minValue.setDate(minValue.getDate());
+            $("#end-date").datepicker( "option", "minDate", minValue );
         });
         $("#end-date").datepicker({
+            dateFormat: 'yy-mm-dd',
             changeMonth: true,
             changeYear: true
         });
