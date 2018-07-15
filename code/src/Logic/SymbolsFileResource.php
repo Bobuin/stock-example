@@ -20,17 +20,17 @@ class SymbolsFileResource implements SymbolsResource
     /**
      * SymbolsFileResource constructor.
      *
-     * @param string $companiesInfoFilePath A path to file with companies info
+     * @param string $companiesFilePath A path to file with companies info
      */
-    public function __construct(string $companiesInfoFilePath)
+    public function __construct(string $companiesFilePath)
     {
-        $file = new File($companiesInfoFilePath);
+        $file = new File($companiesFilePath);
 
         if (false === $file->exists()) {
             throw new BadRequestException('Cannot read Companies info file.');
         }
 
-        $this->filePath = $companiesInfoFilePath;
+        $this->filePath = $companiesFilePath;
     }
 
     /**

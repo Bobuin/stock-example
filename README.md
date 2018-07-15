@@ -31,3 +31,7 @@ For connecting to Vagrant SSH use next settings:
 
 Read and edit `config/app.php` and setup the `'EmailTransport'` and any other
 configuration relevant for your application.
+
+## Testing
+
+To run unit tests use command `composer test`
