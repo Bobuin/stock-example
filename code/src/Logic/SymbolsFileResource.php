@@ -3,6 +3,8 @@
 namespace App\Logic;
 
 use Cake\Datasource\Exception\RecordNotFoundException;
+use Cake\Filesystem\File;
+use Cake\Http\Exception\BadRequestException;
 
 /**
  * Class SymbolsFileResource
@@ -12,32 +14,23 @@ use Cake\Datasource\Exception\RecordNotFoundException;
 class SymbolsFileResource implements SymbolsResource
 {
 
-    private const RESOURCE_PATH = APP . 'Data' . DS . 'companylist.csv';
-
-    /**
-     * @return array
-     */
+    private $filePath;
     private $columnNames;
 
     /**
-     * @return array
+     * SymbolsFileResource constructor.
+     *
+     * @param string $companiesInfoFilePath A path to file with companies info
      */
-    private function readSource(): array
+    public function __construct(string $companiesInfoFilePath)
     {
-        if (($handle = fopen(self::RESOURCE_PATH, 'rb')) === false) {
-            throw new RecordNotFoundException('Companies list file cannot be read.');
+        $file = new File($companiesInfoFilePath);
+
+        if (false === $file->exists()) {
+            throw new BadRequestException('Cannot read Companies info file.');
         }
 
-        $fileContent = [];
-        while (($rowData = fgetcsv($handle, 1000, ',')) !== false) {
-            $fileContent[] = $rowData;
-        }
-
-        fclose($handle);
-
-        $this->columnNames = array_shift($fileContent);
-
-        return $fileContent;
+        $this->filePath = $companiesInfoFilePath;
     }
 
     /**
@@ -66,5 +59,26 @@ class SymbolsFileResource implements SymbolsResource
         }
 
         throw new RecordNotFoundException('No company info with this symbol');
+    }
+
+    /**
+     * @return array
+     */
+    private function readSource(): array
+    {
+        if (($handle = fopen($this->filePath, 'rb')) === false) {
+            throw new RecordNotFoundException('Companies list file cannot be read.');
+        }
+
+        $fileContent = [];
+        while (($rowData = fgetcsv($handle, 1000, ',')) !== false) {
+            $fileContent[] = $rowData;
+        }
+
+        fclose($handle);
+
+        $this->columnNames = array_shift($fileContent);
+
+        return $fileContent;
     }
 }

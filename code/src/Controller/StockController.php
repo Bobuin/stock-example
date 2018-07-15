@@ -5,6 +5,7 @@ namespace App\Controller;
 use App\Logic\RequestData;
 use App\Logic\StockDataLogic;
 use App\Logic\SymbolsFileResource;
+use Cake\I18n\FrozenDate;
 use Cake\Mailer\Email;
 use Cake\Validation\Validator;
 
@@ -24,7 +25,7 @@ class StockController extends AppController
     public function index()
     {
         if ($this->getRequest()->is('post')) {
-            $stockDataLogic = new StockDataLogic(new SymbolsFileResource());
+            $stockDataLogic = new StockDataLogic(new SymbolsFileResource(APP . 'Data' . DS . 'companylist.csv'));
 
             $symbolsList = $stockDataLogic->getSymbolsList();
 
@@ -33,9 +34,7 @@ class StockController extends AppController
             if (empty($errors)) {
                 $requestData = $this->prepareRequestData();
 
-                $rawStockData = $stockDataLogic->getRawStockData($requestData);
-
-                $stockData = $stockDataLogic->formatStockData($rawStockData);
+                $stockData = $stockDataLogic->getStockData($requestData);
 
                 $companyName = $stockDataLogic->getCompanyName($requestData->getSymbol());
 
@@ -71,12 +70,24 @@ class StockController extends AppController
 
         $validator->requirePresence('start_date')
             ->notEmpty('start_date', 'Please fill this field')
-            ->date('start_date', ['ymd']);
+            ->date('start_date', ['ymd'])
+            ->add('start_date', 'custom', [
+                'rule' => function ($value) {
+                    return FrozenDate::parse($value) < FrozenDate::now();
+                },
+                'message' => 'The start date must be not in the future',
+            ]);
 
         $validator->requirePresence('end_date')
             ->notEmpty('end_date', 'Please fill this field')
             ->date('end_date', ['ymd'])
-            ->greaterThanOrEqualToField('end_date', 'start_date');
+            ->greaterThanOrEqualToField('end_date', 'start_date')
+            ->add('end_date', 'custom', [
+                'rule' => function ($value) {
+                    return FrozenDate::parse($value) < FrozenDate::now();
+                },
+                'message' => 'The end date must be not in the future',
+            ]);
 
         $validator->requirePresence('email')
             ->notEmpty('email', 'Please fill this field')

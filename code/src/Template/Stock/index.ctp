@@ -20,7 +20,7 @@ use Cake\View\View;
 
         if (!empty($errors['symbol'])) {
             foreach ($errors['symbol'] as $error) {
-                echo 'Company Symbol: ' . $error . '<br />';
+                echo '<div class="error"><label>Company Symbol: ' . $error . '</label></div>';
             }
         }
         echo $this->Form->control(
@@ -35,7 +35,7 @@ use Cake\View\View;
 
         if (!empty($errors['start_date'])) {
             foreach ($errors['start_date'] as $error) {
-                echo 'Start Date: ' . $error . '<br />';
+                echo '<div class="error"><label>Start Date: ' . $error . '</label></div>';
             }
         }
         echo $this->Form->control(
@@ -51,7 +51,7 @@ use Cake\View\View;
 
         if (!empty($errors['end_date'])) {
             foreach ($errors['end_date'] as $error) {
-                echo 'End Date: ' . $error . '<br />';
+                echo '<div class="error"><label>End Date: ' . $error . '</label></div>';
             }
         }
         echo $this->Form->control('End Date',
@@ -64,7 +64,7 @@ use Cake\View\View;
 
         if (!empty($errors['email'])) {
             foreach ($errors['email'] as $error) {
-                echo 'Email: ' . $error . '<br />';
+                echo '<div class="error"><label>Email: ' . $error . '</label></div>';
             }
         }
         echo $this->Form->control('email', [
@@ -83,20 +83,26 @@ use Cake\View\View;
 
 <script type="text/javascript">
     $(function () {
+        var maxValue = new Date();
+        maxValue.setDate(maxValue.getDate() - 1);
         $("#start-date").datepicker({
             dateFormat: 'yy-mm-dd',
             changeMonth: true,
             changeYear: true
-        }).bind("change",function(){
+        }).datepicker(
+            "option", 'maxDate', maxValue
+        ).bind("change", function () {
             var minValue = $(this).val();
             minValue = $.datepicker.parseDate("yy-mm-dd", minValue);
             minValue.setDate(minValue.getDate());
-            $("#end-date").datepicker( "option", "minDate", minValue );
+            $("#end-date").datepicker("option", "minDate", minValue);
         });
         $("#end-date").datepicker({
             dateFormat: 'yy-mm-dd',
             changeMonth: true,
             changeYear: true
-        });
+        }).datepicker(
+            "option", 'maxDate', maxValue
+        );
     });
 </script>

@@ -22,11 +22,16 @@ class StockDataLogic
     /**
      * StockDataLogic constructor.
      *
-     * @param \App\Logic\SymbolsResource $resource The resource to get symbols info
+     * @param \App\Logic\SymbolsResource $symbolsResource The resource to get symbols info
+     * @param null|string                $dataSource      The resource to get historical data
      */
-    public function __construct(SymbolsResource $resource)
+    public function __construct(SymbolsResource $symbolsResource, ?string $dataSource = null)
     {
-        $this->resource = $resource;
+        $this->resource = $symbolsResource;
+
+        if (null !== $dataSource) {
+            $this->historicalDataResource = $dataSource;
+        }
     }
 
     /**
@@ -50,12 +55,14 @@ class StockDataLogic
     }
 
     /**
-     * @param string $rawData Retrieved data from stock source
+     * @param RequestData $requestData Data object with necessary request data
      *
      * @return \Cake\Datasource\ResultSetInterface
      */
-    public function formatStockData(string $rawData): ResultSetInterface
+    public function getStockData(RequestData $requestData): ResultSetInterface
     {
+        $rawData = $this->getRawStockData($requestData);
+
         $explodedData = explode(PHP_EOL, trim($rawData));
 
         $data = [];
@@ -72,7 +79,7 @@ class StockDataLogic
      *
      * @return string
      */
-    public function getRawStockData(RequestData $requestData): string
+    private function getRawStockData(RequestData $requestData): string
     {
         $link = preg_replace(
             ['/##symbol##/', '/##start_date##/', '/##end_date##/'],
@@ -82,8 +89,8 @@ class StockDataLogic
 
         $rawData = file_get_contents($link);
 
-        if (false === $rawData) {
-            throw new BadRequestException('Cannot retrieve stock data. Site quandl.com unavailable.');
+        if (empty($rawData)) {
+            throw new BadRequestException('Cannot retrieve stock data. Site quandl.com is unavailable.');
         }
 
         return $rawData;

@@ -64,13 +64,33 @@ class StockControllerTest extends IntegrationTestCase
         $this->enableCsrfToken();
         $this->enableSecurityToken();
 
-        $this->post('/stock', ['sybmol']);
+        $this->post('/stock', ['key']);
 
         $this->assertResponseOk();
         $this->assertResponseCode(200);
         $this->assertResponseContains('Company Symbol: This field is required');
         $this->assertResponseContains('Start Date: This field is required');
         $this->assertResponseContains('End Date: This field is required');
+        $this->assertResponseContains('Email: This field is required');
+    }
+
+    /**
+     * Test index method
+     *
+     * @return void
+     */
+    public function testIndexPostWrongDates(): void
+    {
+        $this->enableCsrfToken();
+        $this->enableSecurityToken();
+
+        $this->post('/stock', ['start_date' => '2020-01-01', 'end_date' => '2020-01-01']);
+
+        $this->assertResponseOk();
+        $this->assertResponseCode(200);
+        $this->assertResponseContains('Company Symbol: This field is required');
+        $this->assertResponseContains('Start Date: The start date must be not in the future');
+        $this->assertResponseContains('End Date: The end date must be not in the future');
         $this->assertResponseContains('Email: This field is required');
     }
 }

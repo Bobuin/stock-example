@@ -3,6 +3,7 @@
 namespace App\Test\TestCase\Logic;
 
 use App\Logic\RequestData;
+use Cake\Http\Exception\BadRequestException;
 use Cake\TestSuite\TestCase;
 
 /**
@@ -63,6 +64,7 @@ class RequestDataTest extends TestCase
             $object->setEndDate($date);
             $this->assertTrue(false);
         } catch (\Exception $exception) {
+            self::assertInstanceOf(BadRequestException::class, $exception);
             self::assertEquals('Cannot parse end date.', $exception->getMessage());
         }
     }

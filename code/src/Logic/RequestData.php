@@ -14,11 +14,30 @@ class RequestData
 {
     private const DATE_FORMAT = 'Y-m-d';
     private const PARSE_DATE_FORMAT = 'Y-M-d';
+    /** @var string */
     private $symbol;
     /** @var FrozenDate */
     private $startDate;
     /** @var FrozenDate */
     private $endDate;
+
+    /**
+     * @return string
+     */
+    public function getSymbol(): string
+    {
+        return $this->symbol;
+    }
+
+    /**
+     * @param string $symbol The company's stock symbol
+     *
+     * @return void
+     */
+    public function setSymbol($symbol): void
+    {
+        $this->symbol = $symbol;
+    }
 
     /**
      * @return string
@@ -66,23 +85,5 @@ class RequestData
         }
 
         $this->endDate = $parsedEndDate;
-    }
-
-    /**
-     * @return string
-     */
-    public function getSymbol(): string
-    {
-        return $this->symbol;
-    }
-
-    /**
-     * @param string $symbol The company's stock symbol
-     *
-     * @return void
-     */
-    public function setSymbol($symbol): void
-    {
-        $this->symbol = $symbol;
     }
 }
